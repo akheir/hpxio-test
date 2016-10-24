@@ -1,18 +1,19 @@
-#include <hpxio/server/base_file.hpp>
+#if !defined(HPX_IO_SERVER_LOCAL_FILE_HPP)
+#define HPX_IO_SERVER_LOCAL_FILE_HPP
 
+#include <hpxio/server/base_file.hpp>
 
 ///////////////////////////
 namespace hpx { namespace io { namespace server
 {
-    class local_file
-      : public base_file
+    class HPX_COMPONENT_EXPORT local_file
+      : public base_file,
+        public components::locking_hook<components::component_base<local_file> >
     {
-      public:
-
+    public:
         local_file()
+          : fp_(nullptr)
         {
-            fp_ = NULL;
-            file_name_.clear();
         }
 
         ~local_file()
@@ -43,12 +44,11 @@ namespace hpx { namespace io { namespace server
             file_name_ = name;
         }
 
-		void close()
+        void close()
         {
             hpx::threads::executors::io_pool_executor scheduler;
 
             scheduler.add(hpx::util::bind(&local_file::close_work, this));
-
         }
 
         void close_work()
@@ -156,17 +156,6 @@ namespace hpx { namespace io { namespace server
             return result;
         }
 
-		ssize_t pwrite(std::vector<char> const& buf, off_t const offset)
-        {
-            ssize_t result = 0;
-            {
-                hpx::threads::executors::io_pool_executor scheduler;
-                scheduler.add(hpx::util::bind(&local_file::pwrite_work,
-                    this, boost::ref(buf), offset, boost::ref(result)));
-            }
-            return result;
-        }
-
         void pwrite_work(std::vector<char> const& buf,
                 off_t const offset, ssize_t& result)
         {
@@ -191,10 +180,12 @@ namespace hpx { namespace io { namespace server
             fsetpos(fp_, &pos);
         }
 
-        private:
+    private:
 
         std::FILE *fp_;
         std::string file_name_;
     };
 
 }}} // hpx::io::server
+
+#endif
