@@ -1,3 +1,6 @@
+#if !defined(HPX_IO_SERVER_ORANGEFS_FILE_HPP)
+#define HPX_IO_SERVER_ORANGEFS_FILE_HPP
+
 #include <hpxio/server/base_file.hpp>
 
 /* ------------------------  added pvfs header stuff --------------- */
@@ -19,7 +22,9 @@ extern "C" {
 namespace hpx { namespace io { namespace server
 {
 
-    class orangefs_file : public base_file
+    class HPX_COMPONENT_EXPORT orangefs_file
+      : public base_file
+        public components::locking_hook<components::component_base<orangefs_file> >
     {
       public:
         orangefs_file() : fd_(-1)
@@ -185,3 +190,5 @@ namespace hpx { namespace io { namespace server
     };
 
 }}} // hpx::io::server
+
+#endif

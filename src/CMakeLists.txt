@@ -2,14 +2,14 @@ set(ROOT "${hpxio_SOURCE_DIR}/hpxio")
 
 if(HPX_DEFAULT_BUILD_TARGETS)
   add_hpx_component(base_file
-    FOLDER "Core/Components"
+    FOLDER "Core/IO/Components"
     HEADER_ROOT ${ROOT}
-    SOURCES base_file.cpp
+    AUTOGLOB
     ESSENTIAL)
 else()
   add_hpx_component(base_file
-    FOLDER "Core/Components"
+    FOLDER "Core/IO/Components"
     HEADER_ROOT ${ROOT}
-    SOURCES base_file.cpp
-    )
+    AUTOGLOB)
 endif()
+
