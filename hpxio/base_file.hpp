@@ -1,4 +1,5 @@
 //  Copyright (c) 2016 Hartmut Kaiser
+//  Copyright (c) 2016 Alireza Kheirkhahan
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -36,16 +37,16 @@ namespace hpx { namespace io
             close(hpx::launch::sync);
         }
 
-        hpx::future<void> open(std::string const& name, std::string const& mode)
+        hpx::future<void> open(std::string const& name, int const flag)
         {
             typedef hpx::io::server::base_file::open_action open_action;
-            return hpx::async(open_action(), this->get_id(), name, mode);
+            return hpx::async(open_action(), this->get_id(), name, flag);
         }
         void open(hpx::launch::sync_policy, std::string const& name,
-            std::string const& mode)
+            int const flag)
         {
             typedef hpx::io::server::base_file::open_action open_action;
-            open_action()(this->get_id(), name, mode);
+            open_action()(this->get_id(), name, flag);
         }
 
         hpx::future<void> close()
@@ -59,6 +60,29 @@ namespace hpx { namespace io
             return close_action()(this->get_id());
         }
 
+        hpx::future<std::vector<char> > read(size_t const count)
+        {
+            typedef hpx::io::server::base_file::read_action read_action;
+            return hpx::async(read_action(), this->get_id(), count);
+        }
+        std::vector<char> read(hpx::launch::sync_policy, size_t const count)
+        {
+            typedef hpx::io::server::base_file::read_action read_action;
+            return read_action()(this->get_id(), count);
+        }
+
+        hpx::future<std::vector<char> > pread(size_t const count, off_t const offset)
+        {
+            typedef hpx::io::server::base_file::pread_action pread_action;
+            return hpx::async(pread_action(), this->get_id(), count, offset);
+        }
+        std::vector<char> pread(hpx::launch::sync_policy, size_t const count,
+            off_t const offset)
+        {
+            typedef hpx::io::server::base_file::pread_action pread_action;
+            return pread_action()(this->get_id(), count, offset);
+        }
+
         hpx::future<ssize_t> write(std::vector<char> const& buf)
         {
             typedef hpx::io::server::base_file::write_action write_action;
@@ -68,6 +92,18 @@ namespace hpx { namespace io
         {
             typedef hpx::io::server::base_file::write_action write_action;
             return write_action()(this->get_id(), buf);
+        }
+
+        hpx::future<ssize_t> pwrite(std::vector<char> const& buf, off_t const offset)
+        {
+            typedef hpx::io::server::base_file::pwrite_action pwrite_action;
+            return hpx::async(pwrite_action(), this->get_id(), buf, offset);
+        }
+        ssize_t pwrite(hpx::launch::sync_policy, std::vector<char> const& buf,
+            off_t const offset)
+        {
+            typedef hpx::io::server::base_file::pwrite_action pwrite_action;
+            return pwrite_action()(this->get_id(), buf, offset);
         }
     };
 }}

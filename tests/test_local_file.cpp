@@ -1,4 +1,5 @@
 //  Copyright (c) 2016 Hartmut Kaiser
+//  Copyright (c) 2016 Alireza Kheirkhahan
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +15,7 @@ int main(int argc, char* argv[])
     hpx::io::base_file f =
         hpx::new_<hpx::io::server::local_file>(hpx::find_here());
 
-    f.open(hpx::launch::sync, "test.txt", "w+");
+    f.open(hpx::launch::sync, "test.txt", O_WRONLY | O_APPEND | O_CREAT);
 
     std::vector<char> data = { 't', 'e', 's', 't' };
     f.write(hpx::launch::sync, data);

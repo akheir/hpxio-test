@@ -1,3 +1,9 @@
+//  Copyright (c) 2016 Hartmut Kaiser
+//  Copyright (c) 2016 Alireza Kheirkhahan
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #if !defined(HPX_IO_SERVER_BASE_FILE_HPP)
 #define HPX_IO_SERVER_BASE_FILE_HPP
 
@@ -6,7 +12,6 @@
 #include <hpx/runtime/components/server/component_base.hpp>
 #include <hpx/runtime/components/server/locking_hook.hpp>
 
-#include <cstdio>
 #include <vector>
 #include <string>
 
@@ -28,10 +33,10 @@ namespace hpx { namespace io { namespace server
 
         virtual ~base_file() {}
 
-        virtual void open(std::string const& name, std::string const& mode) = 0;
-        void open_novirtual(std::string const& name, std::string const& mode)
+        virtual void open(std::string const& name, int const flag) = 0;
+        void open_novirtual(std::string const& name, int const flag)
         {
-            open(name, mode);
+            open(name, flag);
         }
 
         virtual void close() = 0;

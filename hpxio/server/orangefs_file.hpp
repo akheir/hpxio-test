@@ -1,3 +1,9 @@
+//  Copyright (c) 2016 Hartmut Kaiser
+//  Copyright (c) 2016 Alireza Kheirkhahan
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #if !defined(HPX_IO_SERVER_ORANGEFS_FILE_HPP)
 #define HPX_IO_SERVER_ORANGEFS_FILE_HPP
 
@@ -23,7 +29,7 @@ namespace hpx { namespace io { namespace server
 {
 
     class HPX_COMPONENT_EXPORT orangefs_file
-      : public base_file
+      : public base_file,
         public components::locking_hook<components::component_base<orangefs_file> >
     {
       public:

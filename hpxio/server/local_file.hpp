@@ -1,7 +1,30 @@
+//  Copyright (c) 2016 Hartmut Kaiser
+//  Copyright (c) 2016 Alireza Kheirkhahan
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #if !defined(HPX_IO_SERVER_LOCAL_FILE_HPP)
 #define HPX_IO_SERVER_LOCAL_FILE_HPP
 
 #include <hpxio/server/base_file.hpp>
+
+/* ------------------------  POSIX headears --------------------- */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#ifdef __cplusplus
+} //extern "C" {
+#endif
+
+/* -------------------------  end POSIX headears  --------------- */
 
 ///////////////////////////
 namespace hpx { namespace io { namespace server
@@ -11,8 +34,7 @@ namespace hpx { namespace io { namespace server
         public components::locking_hook<components::component_base<local_file> >
     {
     public:
-        local_file()
-          : fp_(nullptr)
+        local_file() : fd_(-1)
         {
         }
 
@@ -21,26 +43,32 @@ namespace hpx { namespace io { namespace server
             close();
         }
 
-        void open(std::string const& name, std::string const& mode)
+        void open(std::string const& name, int const flag)
         {
             // Get a reference to one of the IO specific HPX io_service objects ...
             hpx::threads::executors::io_pool_executor scheduler;
 
             // ... and schedule the handler to run on one of its OS-threads.
             scheduler.add(hpx::util::bind(&local_file::open_work, this,
-                        boost::ref(name), boost::ref(mode)));
+                        boost::ref(name), flag));
 
             // Note that the destructor of the scheduler object will wait for
             // the scheduled task to finish executing.
         }
 
-        void open_work(std::string const& name, std::string const& mode)
+        void open_work(std::string const& name, int const flag)
         {
-            if (fp_ != NULL)
+            if (fd_ >= 0)
             {
                 close();
             }
-            fp_ = fopen(name.c_str(), mode.c_str());
+            if (flag & O_CREAT)
+            {
+                fd_ = ::open(name.c_str(), flag, 0644);
+            } else
+            {
+                fd_ = ::open(name.c_str(), flag);
+            }
             file_name_ = name;
         }
 
@@ -53,10 +81,10 @@ namespace hpx { namespace io { namespace server
 
         void close_work()
         {
-            if (fp_ != NULL)
+            if (fd_ >= 0)
             {
-                std::fclose(fp_);
-                fp_ = NULL;
+                ::close(fd_);
+                fd_ = -1;
             }
             file_name_.clear();
         }
@@ -74,13 +102,13 @@ namespace hpx { namespace io { namespace server
 
         void read_work(size_t const count, std::vector<char>& result)
         {
-            if (fp_ == NULL || count <= 0)
+            if (fd_ < 0 || count <= 0)
             {
                 return;
             }
 
             std::unique_ptr<char> sp(new char[count]);
-            ssize_t len = fread(sp.get(), 1, count, fp_);
+            ssize_t len = ::read(fd_, sp.get(), count);
 
             if (len == 0)
             {
@@ -104,25 +132,20 @@ namespace hpx { namespace io { namespace server
         void pread_work(size_t const count, off_t const offset,
                 std::vector<char>& result)
         {
-            if (fp_ == NULL || count <= 0 || offset < 0)
+            if (fd_ < 0 || count <= 0 || offset < 0)
             {
                 return;
             }
 
-            fpos_t pos;
-            if (fgetpos(fp_, &pos) != 0)
+            std::unique_ptr<char[]> sp(new char[count]);
+            ssize_t len = ::pread(fd_, sp.get(), count, offset);
+
+            if (len == 0)
             {
                 return;
             }
 
-            if (fseek(fp_, offset, SEEK_SET) != 0)
-            {
-                fsetpos(fp_, &pos);
-                return;
-            }
-
-            read_work(count, result);
-            fsetpos(fp_, &pos);
+            result.assign(sp.get(), sp.get() + len);
         }
 
         ssize_t write(std::vector<char> const& buf)
@@ -138,11 +161,11 @@ namespace hpx { namespace io { namespace server
 
         void write_work(std::vector<char> const& buf, ssize_t& result)
         {
-            if (fp_ == NULL || buf.empty())
+            if (fd_ < 0|| buf.empty())
             {
                 return;
             }
-            result = fwrite(buf.data(), 1, buf.size(), fp_);
+            result = ::write(fd_, buf.data(), buf.size());
         }
 
         ssize_t pwrite(std::vector<char> const& buf, off_t const offset)
@@ -159,30 +182,17 @@ namespace hpx { namespace io { namespace server
         void pwrite_work(std::vector<char> const& buf,
                 off_t const offset, ssize_t& result)
         {
-            if (fp_ == NULL || buf.empty() || offset < 0)
+            if (fd_ < 0 || buf.empty() || offset < 0)
             {
                 return;
             }
 
-            fpos_t pos;
-            if (fgetpos(fp_, &pos) != 0)
-            {
-                return;
-            }
-
-            if (fseek(fp_, offset, SEEK_SET) != 0)
-            {
-                fsetpos(fp_, &pos);
-                return;
-            }
-
-            write_work(buf, result);
-            fsetpos(fp_, &pos);
+            result = ::pwrite(fd_, buf.data(), buf.size(), offset);
         }
 
     private:
 
-        std::FILE *fp_;
+        int fd_;
         std::string file_name_;
     };
 
