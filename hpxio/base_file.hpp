@@ -49,6 +49,17 @@ namespace hpx { namespace io
             open_action()(this->get_id(), name, flag);
         }
 
+        hpx::future<bool> is_open()
+        {
+            typedef hpx::io::server::base_file::is_open_action is_open_action;
+            return hpx::async(is_open_action(), this->get_id());
+        }
+        bool is_open(hpx::launch::sync_policy)
+        {
+            typedef hpx::io::server::base_file::is_open_action is_open_action;
+            return is_open_action()(this->get_id());
+        }
+
         hpx::future<void> close()
         {
             typedef hpx::io::server::base_file::close_action close_action;
@@ -58,6 +69,17 @@ namespace hpx { namespace io
         {
             typedef hpx::io::server::base_file::close_action close_action;
             return close_action()(this->get_id());
+        }
+
+        hpx::future<int> remove_file(std::string const& file_name)
+        {
+            typedef hpx::io::server::base_file::remove_file_action remove_file_action;
+            return hpx::async(remove_file_action(), this->get_id(), file_name);
+        }
+        int remove_file(hpx::launch::sync_policy, std::string const& file_name)
+        {
+            typedef hpx::io::server::base_file::remove_file_action remove_file_action;
+            return remove_file_action()(this->get_id(), file_name);
         }
 
         hpx::future<std::vector<char> > read(size_t const count)
@@ -104,6 +126,17 @@ namespace hpx { namespace io
         {
             typedef hpx::io::server::base_file::pwrite_action pwrite_action;
             return pwrite_action()(this->get_id(), buf, offset);
+        }
+
+        hpx::future<int> lseek(off_t const offset, int const whence)
+        {
+            typedef hpx::io::server::base_file::lseek_action lseek_action;
+            return hpx::async(lseek_action(), this->get_id(), offset, whence);
+        }
+        int lseek(hpx::launch::sync_policy, off_t const offset, int const whence)
+        {
+            typedef hpx::io::server::base_file::lseek_action lseek_action;
+            return lseek_action()(this->get_id(), offset, whence);
         }
     };
 }}

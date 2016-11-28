@@ -39,10 +39,22 @@ namespace hpx { namespace io { namespace server
             open(name, flag);
         }
 
+        virtual bool is_open() = 0;
+        bool is_open_novirtual()
+        {
+            return is_open();
+        }
+
         virtual void close() = 0;
         void close_novirtual()
         {
             close();
+        }
+
+        virtual int remove_file(std::string const& file_name) = 0;
+        int remove_file_novirtual(std::string const& file_name)
+        {
+            return remove_file(file_name);
         }
 
         virtual std::vector<char> read(size_t const count) = 0;
@@ -69,14 +81,23 @@ namespace hpx { namespace io { namespace server
             return pwrite(buf, offset);
         }
 
+        virtual int lseek(off_t const offset, int const whence) = 0;
+        int lseek_novirtual(off_t const offset, int const whence)
+        {
+            return lseek(offset, whence);
+        }
+
     public:
         ///////////////////////////////////////////////////////////////////////
         HPX_DEFINE_COMPONENT_ACTION(base_file, open_novirtual, open_action);
+        HPX_DEFINE_COMPONENT_ACTION(base_file, is_open_novirtual, is_open_action);
         HPX_DEFINE_COMPONENT_ACTION(base_file, close_novirtual, close_action);
+        HPX_DEFINE_COMPONENT_ACTION(base_file, remove_file_novirtual, remove_file_action);
         HPX_DEFINE_COMPONENT_ACTION(base_file, read_novirtual, read_action);
         HPX_DEFINE_COMPONENT_ACTION(base_file, pread_novirtual, pread_action);
         HPX_DEFINE_COMPONENT_ACTION(base_file, write_novirtual, write_action);
         HPX_DEFINE_COMPONENT_ACTION(base_file, pwrite_novirtual, pwrite_action);
+        HPX_DEFINE_COMPONENT_ACTION(base_file, lseek_novirtual, lseek_action);
     };
 
 }}}  // hpx::io::server
@@ -85,8 +106,12 @@ namespace hpx { namespace io { namespace server
 // Declaration of serialization support for the local_file actions
 HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::base_file::open_action,
     base_file_open_action)
+HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::base_file::is_open_action,
+    base_file_is_open_action)
 HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::base_file::close_action,
     base_file_close_action)
+HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::base_file::remove_file_action,
+    base_file_remove_file_action)
 HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::base_file::read_action,
     base_file_read_action)
 HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::base_file::pread_action,
@@ -95,5 +120,7 @@ HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::base_file::write_action,
     base_file_write_action)
 HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::base_file::pwrite_action,
     base_file_pwrite_action)
+HPX_REGISTER_ACTION_DECLARATION(hpx::io::server::base_file::lseek_action,
+    base_file_lseek_action)
 
 #endif

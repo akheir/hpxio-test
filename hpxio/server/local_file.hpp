@@ -72,10 +72,14 @@ namespace hpx { namespace io { namespace server
             file_name_ = name;
         }
 
+        bool is_open() 
+        {
+            return fd_ >= 0;
+        }
+
         void close()
         {
             hpx::threads::executors::io_pool_executor scheduler;
-
             scheduler.add(hpx::util::bind(&local_file::close_work, this));
         }
 
@@ -87,6 +91,22 @@ namespace hpx { namespace io { namespace server
                 fd_ = -1;
             }
             file_name_.clear();
+        }
+
+        int remove_file(std::string const& file_name)
+        {
+            int result;
+            {
+                hpx::threads::executors::io_pool_executor scheduler;
+                scheduler.add(hpx::util::bind(&local_file::remove_file_work,
+                            this, boost::ref(file_name), boost::ref(result)));
+            }
+            return result;
+        }
+
+        void remove_file_work(std::string const& file_name, int &result)
+        {
+            result = ::unlink(file_name.c_str());
         }
 
         std::vector<char> read(size_t const count)
@@ -188,6 +208,28 @@ namespace hpx { namespace io { namespace server
             }
 
             result = ::pwrite(fd_, buf.data(), buf.size(), offset);
+        }
+
+        int lseek(off_t const offset, int const whence)
+        {
+            int result;
+            {
+                hpx::threads::executors::io_pool_executor scheduler;
+                scheduler.add(hpx::util::bind(&local_file::lseek_work,
+                    this, offset, whence, boost::ref(result)));
+            }
+            return result;
+        }
+
+        void lseek_work(off_t const offset, int const whence, int& result)
+        {
+            if (fd_ < 0)
+            {
+                result = -1;
+                return;
+            }
+
+            result = ::lseek(fd_, offset, whence);
         }
 
     private:

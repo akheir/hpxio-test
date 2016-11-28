@@ -40,10 +40,13 @@ HPX_DEFINE_GET_COMPONENT_TYPE(orangefs_file_type::wrapped_type)
 typedef hpx::io::server::base_file base_file_type;
 
 HPX_REGISTER_ACTION(base_file_type::open_action, base_file_open_action)
+HPX_REGISTER_ACTION(base_file_type::is_open_action, base_file_is_open_action)
 HPX_REGISTER_ACTION(base_file_type::close_action, base_file_close_action)
+HPX_REGISTER_ACTION(base_file_type::remove_file_action, base_file_remove_file_action)
 HPX_REGISTER_ACTION(base_file_type::read_action, base_file_read_action)
 HPX_REGISTER_ACTION(base_file_type::pread_action, base_file_pread_action)
 HPX_REGISTER_ACTION(base_file_type::write_action, base_file_write_action)
 HPX_REGISTER_ACTION(base_file_type::pwrite_action, base_file_pwrite_action)
+HPX_REGISTER_ACTION(base_file_type::lseek_action, base_file_lseek_action)
 
 HPX_DEFINE_GET_COMPONENT_TYPE(base_file_type)
