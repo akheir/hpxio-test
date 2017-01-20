@@ -82,58 +82,62 @@ namespace hpx { namespace io
             return remove_file_action()(this->get_id(), file_name);
         }
 
-        hpx::future<std::vector<char> > read(size_t const count)
+        hpx::future<hpx::serialization::serialize_buffer<char> > read(size_t const count)
         {
             typedef hpx::io::server::base_file::read_action read_action;
             return hpx::async(read_action(), this->get_id(), count);
         }
-        std::vector<char> read(hpx::launch::sync_policy, size_t const count)
+        hpx::serialization::serialize_buffer<char> read(hpx::launch::sync_policy,
+            size_t const count)
         {
             typedef hpx::io::server::base_file::read_action read_action;
             return read_action()(this->get_id(), count);
         }
 
-        hpx::future<std::vector<char> > pread(size_t const count, off_t const offset)
+        hpx::future<hpx::serialization::serialize_buffer<char> > pread(size_t const count,
+            off_t const offset)
         {
             typedef hpx::io::server::base_file::pread_action pread_action;
             return hpx::async(pread_action(), this->get_id(), count, offset);
         }
-        std::vector<char> pread(hpx::launch::sync_policy, size_t const count,
-            off_t const offset)
+        hpx::serialization::serialize_buffer<char> pread(hpx::launch::sync_policy,
+            size_t const count, off_t const offset)
         {
             typedef hpx::io::server::base_file::pread_action pread_action;
             return pread_action()(this->get_id(), count, offset);
         }
 
-        hpx::future<ssize_t> write(std::vector<char> const& buf)
+        hpx::future<ssize_t> write(hpx::serialization::serialize_buffer<char> const& buf)
         {
             typedef hpx::io::server::base_file::write_action write_action;
             return hpx::async(write_action(), this->get_id(), buf);
         }
-        ssize_t write(hpx::launch::sync_policy, std::vector<char> const& buf)
+        ssize_t write(hpx::launch::sync_policy,
+            hpx::serialization::serialize_buffer<char> const& buf)
         {
             typedef hpx::io::server::base_file::write_action write_action;
             return write_action()(this->get_id(), buf);
         }
 
-        hpx::future<ssize_t> pwrite(std::vector<char> const& buf, off_t const offset)
+        hpx::future<ssize_t> pwrite(hpx::serialization::serialize_buffer<char> const& buf,
+            off_t const offset)
         {
             typedef hpx::io::server::base_file::pwrite_action pwrite_action;
             return hpx::async(pwrite_action(), this->get_id(), buf, offset);
         }
-        ssize_t pwrite(hpx::launch::sync_policy, std::vector<char> const& buf,
-            off_t const offset)
+        ssize_t pwrite(hpx::launch::sync_policy,
+            hpx::serialization::serialize_buffer<char> const& buf, off_t const offset)
         {
             typedef hpx::io::server::base_file::pwrite_action pwrite_action;
             return pwrite_action()(this->get_id(), buf, offset);
         }
 
-        hpx::future<int> lseek(off_t const offset, int const whence)
+        hpx::future<off_t> lseek(off_t const offset, int const whence)
         {
             typedef hpx::io::server::base_file::lseek_action lseek_action;
             return hpx::async(lseek_action(), this->get_id(), offset, whence);
         }
-        int lseek(hpx::launch::sync_policy, off_t const offset, int const whence)
+        off_t lseek(hpx::launch::sync_policy, off_t const offset, int const whence)
         {
             typedef hpx::io::server::base_file::lseek_action lseek_action;
             return lseek_action()(this->get_id(), offset, whence);

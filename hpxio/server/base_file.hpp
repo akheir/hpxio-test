@@ -57,32 +57,40 @@ namespace hpx { namespace io { namespace server
             return remove_file(file_name);
         }
 
-        virtual std::vector<char> read(size_t const count) = 0;
-        std::vector<char> read_novirtual(size_t const count)
+        virtual hpx::serialization::serialize_buffer<char> read(size_t const count) = 0;
+        hpx::serialization::serialize_buffer<char> read_novirtual(size_t const count)
         {
             return read(count);
         }
+        virtual ssize_t read_noaction(hpx::serialization::serialize_buffer<char>& buf,
+            size_t const count) = 0;
 
-        virtual std::vector<char> pread(size_t const count, off_t const offset) = 0;
-        std::vector<char> pread_novirtual(size_t const count, off_t const offset)
+        virtual hpx::serialization::serialize_buffer<char> pread(size_t const count,
+            off_t const offset) = 0;
+        hpx::serialization::serialize_buffer<char> pread_novirtual(size_t const count,
+            off_t const offset)
         {
             return pread(count, offset);
         }
+        virtual ssize_t pread_noaction(hpx::serialization::serialize_buffer<char>& buf,
+            size_t const count, off_t const offset) = 0;
 
-        virtual ssize_t write(std::vector<char> const& buf) = 0;
-        ssize_t write_novirtual(std::vector<char> const& buf)
+        virtual ssize_t write(hpx::serialization::serialize_buffer<char> const& buf) = 0;
+        ssize_t write_novirtual(hpx::serialization::serialize_buffer<char> const& buf)
         {
             return write(buf);
         }
 
-        virtual ssize_t pwrite(std::vector<char> const& buf, off_t const offset) = 0;
-        ssize_t pwrite_novirtual(std::vector<char> const& buf, off_t const offset)
+        virtual ssize_t pwrite(hpx::serialization::serialize_buffer<char> const& buf,
+            off_t const offset) = 0;
+        ssize_t pwrite_novirtual(hpx::serialization::serialize_buffer<char> const& buf,
+            off_t const offset)
         {
             return pwrite(buf, offset);
         }
 
-        virtual int lseek(off_t const offset, int const whence) = 0;
-        int lseek_novirtual(off_t const offset, int const whence)
+        virtual off_t lseek(off_t const offset, int const whence) = 0;
+        off_t lseek_novirtual(off_t const offset, int const whence)
         {
             return lseek(offset, whence);
         }

@@ -109,100 +109,114 @@ namespace hpx { namespace io { namespace server
             result = ::unlink(file_name.c_str());
         }
 
-        std::vector<char> read(size_t const count)
+        hpx::serialization::serialize_buffer<char> read(size_t const count)
         {
-            std::vector<char> result;
+            hpx::serialization::serialize_buffer<char> buf(count);
+            ssize_t result = 0;
             {
                 hpx::threads::executors::io_pool_executor scheduler;
                 scheduler.add(hpx::util::bind(&local_file::read_work,
-                            this, count, boost::ref(result)));
+                            this, count, buf, boost::ref(result)));
+            }
+            return buf;
+        }
+
+        ssize_t read_noaction(hpx::serialization::serialize_buffer<char>& buf,
+            size_t const count)
+        {
+            ssize_t result = 0;
+            {
+                hpx::threads::executors::io_pool_executor scheduler;
+                scheduler.add(hpx::util::bind(&local_file::read_work,
+                            this, count, buf, boost::ref(result)));
             }
             return result;
         }
 
-        void read_work(size_t const count, std::vector<char>& result)
+        void read_work(size_t const count, hpx::serialization::serialize_buffer<char>& buf,
+            ssize_t& result)
         {
             if (fd_ < 0 || count <= 0)
             {
                 return;
             }
 
-            std::unique_ptr<char> sp(new char[count]);
-            ssize_t len = ::read(fd_, sp.get(), count);
-
-            if (len == 0)
-            {
-                return;
-            }
-
-            result.assign(sp.get(), sp.get() + len);
+            result = ::read(fd_, buf.data(), count);
         }
 
-        std::vector<char> pread(size_t const count, off_t const offset)
+        hpx::serialization::serialize_buffer<char> pread(size_t const count,
+            off_t const offset)
         {
-            std::vector<char> result;
+            hpx::serialization::serialize_buffer<char> buf(count);
+            ssize_t result = 0;
             {
                 hpx::threads::executors::io_pool_executor scheduler;
                 scheduler.add(hpx::util::bind(&local_file::pread_work,
-                            this, count, offset, boost::ref(result)));
+                            this, count, offset, buf, boost::ref(result)));
+            }
+            return buf;
+        }
+
+        ssize_t pread_noaction(hpx::serialization::serialize_buffer<char>& buf,
+            size_t const count, off_t const offset)
+        {
+            ssize_t result = 0;
+            {
+                hpx::threads::executors::io_pool_executor scheduler;
+                scheduler.add(hpx::util::bind(&local_file::pread_work,
+                            this, count, offset, buf, boost::ref(result)));
             }
             return result;
         }
 
         void pread_work(size_t const count, off_t const offset,
-                std::vector<char>& result)
+                hpx::serialization::serialize_buffer<char>& buf, ssize_t& result)
         {
             if (fd_ < 0 || count <= 0 || offset < 0)
             {
                 return;
             }
 
-            std::unique_ptr<char[]> sp(new char[count]);
-            ssize_t len = ::pread(fd_, sp.get(), count, offset);
-
-            if (len == 0)
-            {
-                return;
-            }
-
-            result.assign(sp.get(), sp.get() + len);
+            result = ::pread(fd_, buf.data(), count, offset);
         }
 
-        ssize_t write(std::vector<char> const& buf)
+        ssize_t write(hpx::serialization::serialize_buffer<char> const& buf)
         {
             ssize_t result = 0;
             {
                 hpx::threads::executors::io_pool_executor scheduler;
                 scheduler.add(hpx::util::bind(&local_file::write_work,
-                            this, boost::ref(buf), boost::ref(result)));
+                            this, buf, boost::ref(result)));
             }
             return result;
         }
 
-        void write_work(std::vector<char> const& buf, ssize_t& result)
+        void write_work(hpx::serialization::serialize_buffer<char> const& buf,
+            ssize_t& result)
         {
-            if (fd_ < 0|| buf.empty())
+            if (fd_ < 0|| buf.size() == 0)
             {
                 return;
             }
             result = ::write(fd_, buf.data(), buf.size());
         }
 
-        ssize_t pwrite(std::vector<char> const& buf, off_t const offset)
+        ssize_t pwrite(hpx::serialization::serialize_buffer<char> const& buf,
+            off_t const offset)
         {
             ssize_t result = 0;
             {
                 hpx::threads::executors::io_pool_executor scheduler;
                 scheduler.add(hpx::util::bind(&local_file::pwrite_work,
-                    this, boost::ref(buf), offset, boost::ref(result)));
+                    this, buf, offset, boost::ref(result)));
             }
             return result;
         }
 
-        void pwrite_work(std::vector<char> const& buf,
+        void pwrite_work(hpx::serialization::serialize_buffer<char> const& buf,
                 off_t const offset, ssize_t& result)
         {
-            if (fd_ < 0 || buf.empty() || offset < 0)
+            if (fd_ < 0 || buf.size() == 0 || offset < 0)
             {
                 return;
             }
@@ -210,7 +224,7 @@ namespace hpx { namespace io { namespace server
             result = ::pwrite(fd_, buf.data(), buf.size(), offset);
         }
 
-        int lseek(off_t const offset, int const whence)
+        off_t lseek(off_t const offset, int const whence)
         {
             int result;
             {

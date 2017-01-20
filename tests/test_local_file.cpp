@@ -17,9 +17,10 @@ int main(int argc, char* argv[])
 
     f.open(hpx::launch::sync, "test.txt", O_WRONLY | O_APPEND | O_CREAT);
 
-    std::vector<char> data = { 't', 'e', 's', 't' };
+    hpx::serialization::serialize_buffer<char> data ("test\n", 5);
     f.write(hpx::launch::sync, data);
+
+    f.close();
 
     return 0;
 }
-
